@@ -10,7 +10,7 @@ namespace ConvertingSoundToColor
     {
         static void Main(string[] args)
         {
-            // Проверяем наличие аргументов командной строки
+            // Проверяем наличие аргументов командной строки.
             string audioFilePath = string.Empty;
             if (args.Length < 1)
             {
@@ -18,26 +18,26 @@ namespace ConvertingSoundToColor
                 audioFilePath = Console.ReadLine();
             }
 
-            // Проверяем существование файла
+            // Проверяем существование файла.
             if (!File.Exists(audioFilePath))
             {
                 Console.WriteLine("Указанный файл не существует.");
                 return;
             }
 
-            // Создаем экземпляр ColorConverter
+            // Создаем экземпляр ColorConverter.
             IColorConverter colorConverter = new ColorConverter();
 
-            // Предположим, что мы извлекли аудио характеристики (в реальной ситуации это будет получено из анализа файла)
+            // Извличени характеристик.
             AudioFeatures audioFeatures = ExtractAudioFeatures(audioFilePath);
 
-            // Преобразуем аудио характеристики в цвет
+            // Преобразуем аудио характеристики в цвет.
             RGBColor color = colorConverter.ConvertToColor(audioFeatures);
 
-            // Создаем изображение
+            // Создаем изображение.
             CreateImage(color, audioFilePath);
 
-            // Выводим результат
+            // Выводим результат.
             Console.WriteLine($"Цвет на основе аудио файла: {color}");
         }
 
@@ -45,7 +45,10 @@ namespace ConvertingSoundToColor
         {
             using (var reader = new AudioFileReader(audioFilePath))
             {
+                // Извлекаем продолжительность в секундах
                 float durationSeconds = (float)reader.TotalTime.TotalSeconds;
+
+                // Находим максимальную громкость
                 float maxVolume = 0;
                 float[] buffer = new float[reader.WaveFormat.SampleRate];
                 int bytesRead;
@@ -54,6 +57,7 @@ namespace ConvertingSoundToColor
                 {
                     for (int i = 0; i < bytesRead; i++)
                     {
+                        // Вычисляем уровень громкости в каждом семпле.
                         float volume = Math.Abs(buffer[i]);
                         if (volume > maxVolume)
                         {
@@ -62,6 +66,7 @@ namespace ConvertingSoundToColor
                     }
                 }
 
+                // Нормализуем громкость к диапазону 0-1.
                 return new AudioFeatures
                 {
                     MaxVolume = maxVolume,
