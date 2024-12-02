@@ -2,7 +2,6 @@
 using ConvertingSoundToColor.Services;
 using NAudio.Wave;
 using System.Drawing;
-using ColorConverter = ConvertingSoundToColor.Services.ColorConverter;
 
 namespace ConvertingSoundToColor
 {
@@ -10,35 +9,36 @@ namespace ConvertingSoundToColor
     {
         static void Main(string[] args)
         {
-            // Проверяем наличие аргументов командной строки.
-            string audioFilePath = string.Empty;
-            if (args.Length < 1)
+            while (true)
             {
-                Console.WriteLine("Пожалуйста, укажите путь к аудио файлу.");
-                audioFilePath = Console.ReadLine();
+                // Проверяем наличие аргументов командной строки.
+                string audioFilePath = string.Empty;
+                if (args.Length < 1)
+                {
+                    Console.WriteLine("Пожалуйста, укажите путь к аудио файлу.");
+                    audioFilePath = Console.ReadLine();
+                }
+
+                // Проверяем существование файла.
+                if (!File.Exists(audioFilePath))
+                {
+                    Console.WriteLine("Указанный файл не существует.");
+                    return;
+                }
+
+                AudioMoodAnalyzer analyzer = new AudioMoodAnalyzer();
+
+                // Преобразуем аудио характеристики в цвет.
+                RGBColor color = analyzer.AnalyzeMood(audioFilePath);
+
+                // Создаем изображение.
+                CreateImage(color, audioFilePath);
+
+                // Выводим результат.
+                Console.WriteLine($"Цвет на основе аудио файла: {color}");
+                Console.WriteLine("\n\n\n");
+                Console.ReadKey();
             }
-
-            // Проверяем существование файла.
-            if (!File.Exists(audioFilePath))
-            {
-                Console.WriteLine("Указанный файл не существует.");
-                return;
-            }
-
-            // Создаем экземпляр ColorConverter.
-            IColorConverter colorConverter = new ColorConverter();
-
-            // Извличени характеристик.
-            AudioFeatures audioFeatures = ExtractAudioFeatures(audioFilePath);
-
-            // Преобразуем аудио характеристики в цвет.
-            RGBColor color = colorConverter.ConvertToColor(audioFeatures);
-
-            // Создаем изображение.
-            CreateImage(color, audioFilePath);
-
-            // Выводим результат.
-            Console.WriteLine($"Цвет на основе аудио файла: {color}");
         }
 
         private static AudioFeatures ExtractAudioFeatures(string audioFilePath)
@@ -81,12 +81,13 @@ namespace ConvertingSoundToColor
             {
                 using (Graphics g = Graphics.FromImage(bitmap))
                 {
-                    g.Clear(System.Drawing.Color.FromArgb(color.Red, color.Green, color.Blue));
+                    g.Clear(Color.FromArgb(color.Red, color.Green, color.Blue));
                 }
 
                 // Получаем директорию файла и создаем полное имя для изображения
                 string directory = Path.GetDirectoryName(audioFilePath);
-                string imagePath = Path.Combine(directory, "audio_color.jpg");
+                string fielName = audioFilePath.Split('\\').Last().Split('.').First();
+                string imagePath = Path.Combine(directory, $"audio_color - {fielName}.jpg");
 
                 // Сохраняем изображение в формате JPG
                 bitmap.Save(imagePath, System.Drawing.Imaging.ImageFormat.Jpeg);
